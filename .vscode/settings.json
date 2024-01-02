@@ -1,0 +1,7 @@
+{
+    "files.associations": {
+        "global.h": "c",
+        "list.h": "c",
+        "stdlib.h": "c"
+    }
+}
