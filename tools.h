@@ -1,6 +1,5 @@
 #ifndef __TOOLS__
 #define __TOOLS__
-// #include <stdint.h>
 #define nullptr (void *)0
 
 typedef unsigned char uint8_t;

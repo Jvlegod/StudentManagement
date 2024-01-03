@@ -112,8 +112,10 @@ bool StudentManager_delete(struct _StudentManger *manage, Student_t *s)
     {
         return false;
     }
+
     bool ret = klist_delete(&manage->all, &s->node);
     Student_free(s);
+
     if (!ret)
     {
         return false;
@@ -124,11 +126,17 @@ bool StudentManager_delete(struct _StudentManger *manage, Student_t *s)
 bool StudentManager_insert(struct _StudentManger *manage, Student_t *s, int idx)
 {
     int n = manage->get_len(manage);
-
     // 容量是否满
     if (n >= manage->capacity)
     {
         return false;
+    }
+
+    // 链表为空
+    if (n == 0)
+    {
+        klist_push(&manage->all, &s->node);
+        return true;
     }
 
     // 检查是否超界
@@ -141,6 +149,7 @@ bool StudentManager_insert(struct _StudentManger *manage, Student_t *s, int idx)
     if (idx <= -1)
     {
         klist_push(&manage->all, &s->node);
+        return true;
     }
 
     klist_node_t *node = manage->all.head.next;
@@ -168,7 +177,7 @@ Student_t *StudentManager_indexOf(struct _StudentManger *manage, int idx)
 
     if (idx >= n)
     {
-        return false;
+        return nullptr;
     }
 
     klist_node_t *node = manage->all.head.next;
@@ -177,7 +186,7 @@ Student_t *StudentManager_indexOf(struct _StudentManger *manage, int idx)
         node = node->next;
     }
 
-    if (!node)
+    if (node)
     {
         return KLIST_STRUCT_ADDR(node, Student_t, node);
     }

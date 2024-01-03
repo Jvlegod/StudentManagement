@@ -1,29 +1,26 @@
 #include "gui.h"
 
 extern StudentManger_t manager;
-extern GUI_State state;
-extern GUI_State old_state;
 
 void main_interface()
 {
-    int choice;
+    uint8_t choice;
     printf("\033[1;31m========== 学生信息管理系统 ==========\033[0m\n");
     printf("\033[1;32m\t1. 查询学生信息\n");
     printf("\t2. 修改学生信息\n");
     printf("\t3. 退出\033[0m\n");
     printf("\033[1;34m======================================\033[0m\n");
-    printf("请选择功能（输入相应的数字）: ");
-    scanf("%d", &choice);
+    choice = getchar() - '0';
     switch (choice)
     {
     case 1:
-        set_State(INFORMATION_INTERFACE);
+        enter_State(INFORMATION_INTERFACE);
         break;
     case 2:
-        set_State(MODIFY_INTERFACE);
+        enter_State(MODIFY_INTERFACE);
         break;
     case 3:
-        set_State(EXIT_INTERFACE);
+        enter_State(EXIT_INTERFACE);
         break;
     default:
         break;
@@ -34,27 +31,26 @@ void information_interface()
 {
     // 先展示画面
     manager.display(&manager);
-    int choice;
+    uint8_t choice;
     printf("\033[1;31m========== 学生信息管理系统 ==========\033[0m\n");
     printf("\033[1;32m\t1. 查询学生信息\n");
     printf("\t2. 修改学生信息\n");
     printf("\t3. 返回上一界面\n");
     printf("\t4. 退出\033[0m\n");
     printf("\033[1;34m======================================\033[0m\n");
-    printf("请选择功能（输入相应的数字）: ");
-    scanf("%d", &choice);
+    choice = getchar() - '0';
     switch (choice)
     {
     case 1:
         break;
     case 2:
-        set_State(MODIFY_INTERFACE);
+        enter_State(MODIFY_INTERFACE);
         break;
     case 3:
-        set_State(old_state);
+        back_State();
         break;
     case 4:
-        set_State(EXIT_INTERFACE);
+        enter_State(EXIT_INTERFACE);
         break;
     default:
         break;
@@ -63,32 +59,44 @@ void information_interface()
 
 void modify_interface()
 {
-    int choice;
+    uint8_t choice;
     printf("\033[1;31m========== 学生信息管理系统 ==========\033[0m\n");
-    printf("\033[1;32m\t1. 查询学生信息\n");
-    printf("\t2. 增加学生\n");
-    printf("\t3. 删除学生\n");
-    printf("\t4. 返回上一界面\n");
-    printf("\t5. 退出\033[0m\n");
+    printf("\033[1;32m\t1. 增加学生\n");
+    printf("\t2. 删除学生\n");
+    printf("\t3. 返回上一界面\n");
+    printf("\t4. 退出\033[0m\n");
     printf("\033[1;34m======================================\033[0m\n");
-    printf("请选择功能（输入相应的数字）: ");
-    scanf("%d", &choice);
+    choice = getchar() - '0';
     switch (choice)
     {
     case 1:
-        set_State(INFORMATION_INTERFACE);
+        enter_State(ADD_INTERFACE);
         break;
     case 2:
-        set_State(ADD_INTERFACE);
+        set_nowait();
+        printf("请输入删除学生的下标:\n");
+        int indexOfNum = 0;
+        scanf("%d", &indexOfNum);
+        Student_t *s = manager.indexOf(&manager, indexOfNum);
+        if (s == nullptr)
+        {
+            printf("\033[1;31m该序号不存在!\033[0m\n");
+            getchar();
+            getchar();
+            fflush(stdin);
+        }
+        else
+        {
+            manager.delt(&manager, s);
+        }
+        set_wait();
+        // enter_State(DELTE_INTERFACE);
         break;
     case 3:
-        set_State(DELTE_INTERFACE);
+        back_State();
         break;
     case 4:
-        set_State(old_state);
-        break;
-    case 5:
-        set_State(EXIT_INTERFACE);
+        enter_State(EXIT_INTERFACE);
         break;
     default:
         break;
@@ -97,16 +105,15 @@ void modify_interface()
 
 void add_interface()
 {
-    int choice;
-    printf("========== 学生信息管理系统 ==========\n");
-    printf("\t1. 新建学生信息\n");
-    printf("\t2. 增加学生\n");
-    printf("\t3. 删除学生\n");
+    uint8_t choice;
+    printf("\033[1;31m========== 学生信息管理系统 ==========\033[0m\n");
+    printf("\033[1;32m\t1. 头插\n");
+    printf("\t2. 尾插\n");
+    printf("\t3. 按序号插入\n");
     printf("\t4. 返回上一界面\n");
-    printf("\t5. 退出\n");
-    printf("======================================\n");
-    printf("请选择功能（输入相应的数字）: ");
-    scanf("%d", &choice);
+    printf("\t5. 退出\033[0m\n");
+    printf("\033[1;34m======================================\033[0m\n");
+    choice = getchar() - '0';
 
     Student_t *s;
     char name[NAME_LEN];
@@ -115,36 +122,43 @@ void add_interface()
     char id[ID_LEN];
     Sex_t sex;
 
-    switch (choice)
+    if (choice < 4)
     {
-    case 1:
+        set_nowait();
         printf("请依次输入学生的姓名、成绩、年龄、学号、性别(0表示女，1表示男):\n");
         scanf("%s %d %d %s %d", name, &score, &age, id, &sex);
         s = Student_init(name, score, age, id, sex);
+        set_wait();
+    }
 
-        int method;
-
-        printf("请选择：0.头插，1.尾插:");
-        scanf("%d", &method);
-        manager.append(&manager, s, method);
+    switch (choice)
+    {
+    case 1:
+        manager.append(&manager, s, INSERT_HEAD);
         break;
     case 2:
-        set_State(ADD_INTERFACE);
+        manager.append(&manager, s, INSERT_TAIL);
         break;
     case 3:
-        set_State(DELTE_INTERFACE);
+        set_nowait();
+        printf("请输入要插入的序号(非负数):\n");
+        int indexOfNum = 0;
+        scanf("%d", &indexOfNum);
+        manager.insert(&manager, s, indexOfNum);
+        set_wait();
         break;
     case 4:
-        set_State(old_state);
+        back_State();
         break;
     case 5:
-        set_State(EXIT_INTERFACE);
+        enter_State(EXIT_INTERFACE);
         break;
     default:
         break;
     }
 }
 
+// 未开发
 void delte_interface()
 {
 }

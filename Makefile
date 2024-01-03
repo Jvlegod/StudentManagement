@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -Wall -g -Wextra -std=c11
+CFLAGS = -Wall -g -pthread -Wextra -std=c11
 TARGET = StudentManagement
 
 SRC_DIR = .
