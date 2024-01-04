@@ -1,8 +1,8 @@
-#include "student.h"
 #include <stdlib.h>
+#include "student.h"
 #include "list.h"
 
-static void swapStudent(struct _StudentManger *manage, Student_t *s1, Student_t *s2)
+static void swapStudent(Student_t *s1, Student_t *s2)
 {
     Student_t s3;
     memcpy(s3.name, s1->name, sizeof(s1->name));
@@ -28,6 +28,7 @@ bool StudentManager_init(StudentManger_t *manage, int maxlen)
 {
     // 初始化链表
     klist_init(&manage->all);
+    manage->sortTree = SortTree_Init("-1");
 
     manage->capacity = maxlen;
 
@@ -36,7 +37,9 @@ bool StudentManager_init(StudentManger_t *manage, int maxlen)
     manage->display = StudentManager_display;
     manage->delt = StudentManager_delete;
     manage->insert = StudentManager_insert;
-    manage->indexOf = StudentManager_indexOf;
+    manage->indexOfNum = StudentManager_indexOfNum;
+    manage->indexOfId = StudentManager_indexOfId;
+    manage->indexOfName = StudentManager_indexOfName;
     manage->sort = StudentManager_sort;
 
     return true;
@@ -69,9 +72,11 @@ bool StudentManager_add(struct _StudentManger *manage, Student_t *s, uint8_t MET
     {
     case INSERT_HEAD:
         klist_push(&manage->all, &s->node);
+        SortTree_insert(manage->sortTree, s->id);
         break;
     case INSERT_TAIL:
         klist_append(&manage->all, &s->node);
+        SortTree_insert(manage->sortTree, s->id);
         break;
     default:
         return false;
@@ -136,6 +141,7 @@ bool StudentManager_insert(struct _StudentManger *manage, Student_t *s, int idx)
     if (n == 0)
     {
         klist_push(&manage->all, &s->node);
+        SortTree_insert(manage->sortTree, s->id);
         return true;
     }
 
@@ -149,6 +155,7 @@ bool StudentManager_insert(struct _StudentManger *manage, Student_t *s, int idx)
     if (idx <= -1)
     {
         klist_push(&manage->all, &s->node);
+        SortTree_insert(manage->sortTree, s->id);
         return true;
     }
 
@@ -161,6 +168,7 @@ bool StudentManager_insert(struct _StudentManger *manage, Student_t *s, int idx)
     if (node != nullptr)
     {
         klist_insert(&manage->all, node, &s->node);
+        SortTree_insert(manage->sortTree, s->id);
         return true;
     }
     return false;
@@ -171,9 +179,14 @@ int StudentManager_get_len(struct _StudentManger *manage)
     return klist_len(&manage->all);
 }
 
-Student_t *StudentManager_indexOf(struct _StudentManger *manage, int idx)
+Student_t *StudentManager_indexOfNum(struct _StudentManger *manage, int idx)
 {
     int n = manage->get_len(manage);
+
+    if (n == 0)
+    {
+        return nullptr;
+    }
 
     if (idx >= n)
     {
@@ -194,11 +207,62 @@ Student_t *StudentManager_indexOf(struct _StudentManger *manage, int idx)
     return nullptr;
 }
 
+Student_t *StudentManager_indexOfId(struct _StudentManger *manage, const char *id)
+{
+    int n = manage->get_len(manage);
+
+    if (n == 0)
+    {
+        return nullptr;
+    }
+
+    klist_node_t *node = manage->all.head.next;
+    while (node && node != &manage->all.tail)
+    {
+        Student_t *s = KLIST_STRUCT_ADDR(node, Student_t, node);
+
+        if (strcmp(s->id, id) == 0)
+        {
+            return s;
+        }
+
+        node = node->next;
+    }
+
+    return nullptr;
+}
+
+Student_t *StudentManager_indexOfName(struct _StudentManger *manage, const char *name)
+{
+    int n = manage->get_len(manage);
+
+    if (n == 0)
+    {
+        return nullptr;
+    }
+
+    klist_node_t *node = manage->all.head.next;
+    while (node && node != &manage->all.tail)
+    {
+        Student_t *s = KLIST_STRUCT_ADDR(node, Student_t, node);
+
+        if (strcmp(s->name, name) == 0)
+        {
+            return s;
+        }
+
+        node = node->next;
+    }
+
+    return nullptr;
+}
+
 bool StudentManager_sort(struct _StudentManger *manage, uint8_t METHOD)
 {
     switch (METHOD)
     {
     case SORT_UPPER:
+        // 冒泡排序
         for (klist_node_t *node = manage->all.tail.prev; node != &manage->all.head; node = node->prev)
         {
             for (klist_node_t *nodej = manage->all.head.next; (nodej->next != nullptr) && (nodej->next->next != node); nodej = nodej->next)
@@ -207,24 +271,13 @@ bool StudentManager_sort(struct _StudentManger *manage, uint8_t METHOD)
                 Student_t *nnode = KLIST_STRUCT_ADDR(nodej->next, Student_t, node);
                 if (pnode->score < nnode->score)
                 {
-                    swapStudent(manage, pnode, nnode);
+                    swapStudent(pnode, nnode);
                 }
             }
         }
         break;
     case SORT_LOWER:
-        for (klist_node_t *node = manage->all.tail.prev; node != &manage->all.head; node = node->prev)
-        {
-            for (klist_node_t *nodej = manage->all.head.next; (nodej->next != nullptr) && (nodej->next->next != node); nodej = nodej->next)
-            {
-                Student_t *pnode = KLIST_STRUCT_ADDR(nodej, Student_t, node);
-                Student_t *nnode = KLIST_STRUCT_ADDR(nodej->next, Student_t, node);
-                if (pnode->score > nnode->score)
-                {
-                    swapStudent(manage, pnode, nnode);
-                }
-            }
-        }
+        SortTree_show(manage->sortTree);
         break;
     default:
         return false;

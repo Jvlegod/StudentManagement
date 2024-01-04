@@ -2,6 +2,8 @@
 #define __STUDENT__
 #include "tools.h"
 #include "list.h"
+#include "sortTree.h"
+#include "global.h"
 #include <stdio.h>
 #include <string.h>
 
@@ -37,14 +39,17 @@ typedef struct _Student
 typedef struct _StudentManger
 {
     kdouble_list_t all; // 全体学生的名单
-    int capacity;       // 容量
+    SortTree *sortTree;
+    int capacity; // 容量
 
     // 增加
     bool (*append)(struct _StudentManger *manage, Student_t *s, uint8_t METHOD); // 加入学生
     bool (*insert)(struct _StudentManger *manage, Student_t *s, int idx);        // 在序号idx后插入,如果idx为-1则再头结点处插入
     // 查找
-    Student_t *(*indexOf)(struct _StudentManger *manage, int idx); // 索引序号为idx的学生
-    void (*display)(struct _StudentManger *manage);                // 显示学生信息
+    Student_t *(*indexOfNum)(struct _StudentManger *manage, int idx);           // 索引序号为idx的学生
+    Student_t *(*indexOfId)(struct _StudentManger *manage, const char *id);     // 索引学号为id的学生
+    Student_t *(*indexOfName)(struct _StudentManger *manage, const char *name); // 索引名字为idx的学生
+    void (*display)(struct _StudentManger *manage);                             // 显示学生信息
     int (*get_len)(struct _StudentManger *manage);
     // 删除
     bool (*delt)(struct _StudentManger *manage, Student_t *s); // 删除学生
@@ -60,8 +65,10 @@ bool StudentManager_add(struct _StudentManger *manage, Student_t *s, uint8_t MET
 int StudentManager_get_len(struct _StudentManger *manage);                            // 获取学生的人数
 void StudentManager_display(struct _StudentManger *manage);                           // 展示成绩
 bool StudentManager_delete(struct _StudentManger *manage, Student_t *s);
-bool StudentManager_insert(struct _StudentManger *manage, Student_t *s, int idx); // 在索引点插入元素
-Student_t *StudentManager_indexOf(struct _StudentManger *manage, int idx);        // 在索引点插入元素
-bool StudentManager_sort(struct _StudentManger *manage, uint8_t METHOD);          // 排序
+bool StudentManager_insert(struct _StudentManger *manage, Student_t *s, int idx);       // 在索引点插入元素
+Student_t *StudentManager_indexOfNum(struct _StudentManger *manage, int idx);           // 索引序号
+Student_t *StudentManager_indexOfId(struct _StudentManger *manage, const char *id);     // 索引学号
+Student_t *StudentManager_indexOfName(struct _StudentManger *manage, const char *name); // 索引姓名
+bool StudentManager_sort(struct _StudentManger *manage, uint8_t METHOD);                // 排序
 
 #endif // !__STUDENT__

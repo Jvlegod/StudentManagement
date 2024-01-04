@@ -3,6 +3,15 @@
         "global.h": "c",
         "list.h": "c",
         "stdlib.h": "c",
-        "unistd.h": "c"
+        "unistd.h": "c",
+        "type_traits": "cpp",
+        "cmath": "cpp",
+        "limits": "cpp",
+        "student.h": "c",
+        "tools.h": "c",
+        "sorttree.h": "c",
+        "stdio.h": "c",
+        "animonation.h": "c",
+        "pthread.h": "c"
     }
 }

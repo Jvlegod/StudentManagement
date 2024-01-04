@@ -24,6 +24,7 @@ typedef enum _GUI_State
     ADD_INTERFACE,
     DELTE_INTERFACE,
     MODIFY_INTERFACE,
+    SORT_INTERFACE,
     EXIT_INTERFACE
 } GUI_State;
 

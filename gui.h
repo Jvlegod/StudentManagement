@@ -8,5 +8,6 @@ void information_interface();
 void modify_interface();
 void add_interface();
 void delte_interface();
+void sort_interface();
 
 #endif // !__GUI_H__
