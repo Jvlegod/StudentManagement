@@ -12,6 +12,7 @@
         "sorttree.h": "c",
         "stdio.h": "c",
         "animonation.h": "c",
-        "pthread.h": "c"
+        "pthread.h": "c",
+        "typeinfo": "c"
     }
 }

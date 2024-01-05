@@ -2,26 +2,42 @@
 #include "student.h"
 #include "list.h"
 
+// 接收数组
+char *recv_buffer[ID_LEN];
+int recv_idx;
+
+static void Student_fromcopyTo(Student_t *s1, Student_t *s2)
+{
+    memcpy(s2->name, s1->name, sizeof(s1->name));
+    s2->score = s1->score;
+    s2->age = s1->age;
+    s2->sex = s1->sex;
+    memcpy(s2->id, s1->id, sizeof(s1->id));
+}
+
 static void swapStudent(Student_t *s1, Student_t *s2)
 {
     Student_t s3;
-    memcpy(s3.name, s1->name, sizeof(s1->name));
-    s3.score = s1->score;
-    s3.age = s1->age;
-    s3.sex = s1->sex;
-    memcpy(s3.id, s1->id, sizeof(s1->id));
+    Student_fromcopyTo(s1, &s3);
+    Student_fromcopyTo(s2, s1);
+    Student_fromcopyTo(&s3, s2);
+    // memcpy(s3.name, s1->name, sizeof(s1->name));
+    // s3.score = s1->score;
+    // s3.age = s1->age;
+    // s3.sex = s1->sex;
+    // memcpy(s3.id, s1->id, sizeof(s1->id));
 
-    memcpy(s1->name, s2->name, sizeof(s2->name));
-    s1->score = s2->score;
-    s1->age = s2->age;
-    s1->sex = s2->sex;
-    memcpy(s1->id, s2->id, sizeof(s2->id));
+    // memcpy(s1->name, s2->name, sizeof(s2->name));
+    // s1->score = s2->score;
+    // s1->age = s2->age;
+    // s1->sex = s2->sex;
+    // memcpy(s1->id, s2->id, sizeof(s2->id));
 
-    memcpy(s2->name, s3.name, sizeof(s3.name));
-    s2->score = s3.score;
-    s2->age = s3.age;
-    s2->sex = s3.sex;
-    memcpy(s2->id, s3.id, sizeof(s3.id));
+    // memcpy(s2->name, s3.name, sizeof(s3.name));
+    // s2->score = s3.score;
+    // s2->age = s3.age;
+    // s2->sex = s3.sex;
+    // memcpy(s2->id, s3.id, sizeof(s3.id));
 }
 
 bool StudentManager_init(StudentManger_t *manage, int maxlen)
@@ -277,7 +293,15 @@ bool StudentManager_sort(struct _StudentManger *manage, uint8_t METHOD)
         }
         break;
     case SORT_LOWER:
+        recv_idx = 0;
         SortTree_show(manage->sortTree);
+        recv_idx = 1;
+        for (klist_node_t *node = manage->all.head.next; node != nullptr && node != &manage->all.tail; node = node->next)
+        {
+            Student_t *s1 = manage->indexOfId(manage, recv_buffer[recv_idx++]);
+            Student_t *s2 = KLIST_STRUCT_ADDR(node, Student_t, node);
+            Student_fromcopyTo(s1, s2);
+        }
         break;
     default:
         return false;

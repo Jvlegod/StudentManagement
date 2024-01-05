@@ -1,5 +1,8 @@
 #include "sortTree.h"
 
+extern char *recv_buffer[];
+extern int recv_idx;
+
 SortTree *SortTree_Init(char *key)
 {
     SortTree *root = (SortTree *)malloc(sizeof(SortTree));
@@ -56,7 +59,8 @@ void SortTree_show(SortTree *root)
         return;
     }
     SortTree_show(root->left);
-    printf("%s ", root->id);
+    recv_buffer[recv_idx++] = root->id;
+    // printf("%s ", root->id);
     SortTree_show(root->right);
 }
 
