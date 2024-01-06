@@ -19,6 +19,9 @@
 #define INSERT_HEAD 0 // 头插
 #define INSERT_TAIL 1 // 尾插
 
+// 展示方法
+#define SHOW_ALL (void *)"-1"
+
 typedef enum
 {
     GIRL,
@@ -34,6 +37,12 @@ typedef struct _Student
     int age;             // 年龄
     Sex_t sex;           // 性别
     char id[ID_LEN];     // 学号
+
+    const char *(*get_name)(struct _Student *s);
+    const int (*get_score)(struct _Student *s);
+    const int (*get_age)(struct _Student *s);
+    const Sex_t (*get_sex)(struct _Student *s);
+    const char *(*get_id)(struct _Student *s);
 } Student_t;
 
 typedef struct _StudentManger
@@ -49,7 +58,7 @@ typedef struct _StudentManger
     Student_t *(*indexOfNum)(struct _StudentManger *manage, int idx);           // 索引序号为idx的学生
     Student_t *(*indexOfId)(struct _StudentManger *manage, const char *id);     // 索引学号为id的学生
     Student_t *(*indexOfName)(struct _StudentManger *manage, const char *name); // 索引名字为idx的学生
-    void (*display)(struct _StudentManger *manage);                             // 显示学生信息
+    void (*display)(struct _StudentManger *manage, Student_t *target);          // 显示学生信息
     int (*get_len)(struct _StudentManger *manage);
     // 删除
     bool (*delt)(struct _StudentManger *manage, Student_t *s); // 删除学生
@@ -59,11 +68,16 @@ typedef struct _StudentManger
 
 Student_t *Student_init(const char *name, int score, int age, const char *id, Sex_t sex);
 bool Student_free(Student_t *s);
+const char *Student_get_name(struct _Student *s);
+const int Student_get_score(struct _Student *s);
+const int Student_get_age(struct _Student *s);
+const Sex_t Student_get_sex(struct _Student *s);
+const char *Student_get_id(struct _Student *s);
 
 bool StudentManager_init(StudentManger_t *manage, int maxlen);                        // 初始化学生列表
 bool StudentManager_add(struct _StudentManger *manage, Student_t *s, uint8_t METHOD); // 加入学生
 int StudentManager_get_len(struct _StudentManger *manage);                            // 获取学生的人数
-void StudentManager_display(struct _StudentManger *manage);                           // 展示成绩
+void StudentManager_display(struct _StudentManger *manage, Student_t *target);        // 展示成绩
 bool StudentManager_delete(struct _StudentManger *manage, Student_t *s);
 bool StudentManager_insert(struct _StudentManger *manage, Student_t *s, int idx);       // 在索引点插入元素
 Student_t *StudentManager_indexOfNum(struct _StudentManger *manage, int idx);           // 索引序号

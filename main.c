@@ -132,26 +132,26 @@ int main(int argc, char *argv[])
     s2 = Student_init("pzj", 13, 19, "2131234", BOY);
     s3 = Student_init("tzl", 123, 19, "245422", GIRL);
     s4 = Student_init("pzy", 32, 19, "123523", GIRL);
-    manager.display(&manager);
+    manager.display(&manager, SHOW_ALL);
     manager.append(&manager, s1, INSERT_TAIL);
-    manager.display(&manager);
+    manager.display(&manager, SHOW_ALL);
     manager.append(&manager, s2, INSERT_HEAD);
-    manager.display(&manager);
+    manager.display(&manager, SHOW_ALL);
     manager.append(&manager, s3, INSERT_TAIL);
-    manager.display(&manager);
+    manager.display(&manager, SHOW_ALL);
     printf("长度%d\n", manager.get_len(&manager));
     manager.append(&manager, s4, INSERT_HEAD);
-    manager.display(&manager);
+    manager.display(&manager, SHOW_ALL);
     printf("长度%d\n", manager.get_len(&manager));
     manager.delt(&manager, s2);
-    manager.display(&manager);
+    manager.display(&manager, SHOW_ALL);
     printf("长度%d\n", manager.get_len(&manager));
     printf("上升排序:\n");
     manager.sort(&manager, SORT_UPPER);
-    manager.display(&manager);
+    manager.display(&manager, SHOW_ALL);
     printf("下降排序:\n");
     manager.sort(&manager, SORT_LOWER);
-    manager.display(&manager);
+    manager.display(&manager, SHOW_ALL);
 
 exit:
     set_nowait();

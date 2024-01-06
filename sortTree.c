@@ -164,7 +164,7 @@ SortTree *prev_SortTree(SortTree *root, SortTree *sortTree, char *key)
         {
             return root;
         }
-        else if (root->right != NULL && (strcmp(root->left->id, key) == 0))
+        else if (root->right != NULL && (strcmp(root->right->id, key) == 0))
         {
             return root;
         }

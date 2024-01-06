@@ -21,23 +21,6 @@ static void swapStudent(Student_t *s1, Student_t *s2)
     Student_fromcopyTo(s1, &s3);
     Student_fromcopyTo(s2, s1);
     Student_fromcopyTo(&s3, s2);
-    // memcpy(s3.name, s1->name, sizeof(s1->name));
-    // s3.score = s1->score;
-    // s3.age = s1->age;
-    // s3.sex = s1->sex;
-    // memcpy(s3.id, s1->id, sizeof(s1->id));
-
-    // memcpy(s1->name, s2->name, sizeof(s2->name));
-    // s1->score = s2->score;
-    // s1->age = s2->age;
-    // s1->sex = s2->sex;
-    // memcpy(s1->id, s2->id, sizeof(s2->id));
-
-    // memcpy(s2->name, s3.name, sizeof(s3.name));
-    // s2->score = s3.score;
-    // s2->age = s3.age;
-    // s2->sex = s3.sex;
-    // memcpy(s2->id, s3.id, sizeof(s3.id));
 }
 
 bool StudentManager_init(StudentManger_t *manage, int maxlen)
@@ -69,6 +52,12 @@ Student_t *Student_init(const char *name, int score, int age, const char *id, Se
     s->age = age;
     s->sex = sex;
     memcpy(s->id, id, sizeof(id));
+
+    s->get_name = Student_get_name;
+    s->get_score = Student_get_score;
+    s->get_age = Student_get_age;
+    s->get_sex = Student_get_sex;
+    s->get_id = Student_get_id;
     return s;
 }
 
@@ -101,10 +90,10 @@ bool StudentManager_add(struct _StudentManger *manage, Student_t *s, uint8_t MET
     return true;
 }
 
-void StudentManager_display(struct _StudentManger *manage)
+void StudentManager_display(struct _StudentManger *manage, Student_t *target)
 {
     int len = manage->get_len(manage);
-    printf("序号\t姓名\t性别\t学号\t分数\n");
+    printf("序号\t姓名\t性别\t年龄\t学号\t分数\n");
 
     klist_node_t *temp = manage->all.head.next;
     for (int i = 0; i < len; i++)
@@ -120,7 +109,20 @@ void StudentManager_display(struct _StudentManger *manage)
         {
             strcpy(sex, "girl");
         }
-        printf("%d\t%s\t%s\t%s\t%d\n", i, s->name, sex, s->id, s->score);
+
+        // 加入单体查询
+        if (s != SHOW_ALL && target == s)
+        {
+            printf("\033[1;32m%d\t%s\t%s\t%d\t%s\t%d\033[0m\n", i, s->name, sex, s->age, s->id, s->score);
+        }
+        else
+        {
+            printf("%d\t%s\t%s\t%d\t%s\t%d\n", i, s->name, sex, s->age, s->id, s->score);
+        }
+
+        // 整体查询
+        // printf("%d\t%s\t%s\t%s\t%d\n", i, s->name, sex, s->id, s->score);
+
         temp = temp->next;
     }
     puts("");
@@ -134,6 +136,7 @@ bool StudentManager_delete(struct _StudentManger *manage, Student_t *s)
         return false;
     }
 
+    SortTree_delete(manage->sortTree, manage->sortTree, s->id);
     bool ret = klist_delete(&manage->all, &s->node);
     Student_free(s);
 
@@ -164,7 +167,7 @@ bool StudentManager_insert(struct _StudentManger *manage, Student_t *s, int idx)
     // 检查是否超界
     if (idx >= n)
     {
-        idx = n;
+        idx = n - 1;
     }
 
     // 为负数则在开头插入
@@ -275,32 +278,68 @@ Student_t *StudentManager_indexOfName(struct _StudentManger *manage, const char 
 
 bool StudentManager_sort(struct _StudentManger *manage, uint8_t METHOD)
 {
+    if (manage->get_len(manage) == 0)
+    {
+        return false;
+    }
+
+    Student_t s_arr[STUDENT_LEN];
+
     switch (METHOD)
     {
     case SORT_UPPER:
+
         // 冒泡排序
-        for (klist_node_t *node = manage->all.tail.prev; node != &manage->all.head; node = node->prev)
+        // for (klist_node_t *node = manage->all.tail.prev; node != &manage->all.head; node = node->prev)
+        // {
+        //     for (klist_node_t *nodej = manage->all.head.next; (nodej->next != nullptr) && (nodej->next->next != node); nodej = nodej->next)
+        //     {
+        //         Student_t *pnode = KLIST_STRUCT_ADDR(nodej, Student_t, node);
+        //         Student_t *nnode = KLIST_STRUCT_ADDR(nodej->next, Student_t, node);
+        //         if (pnode->score < nnode->score)
+        //         {
+        //             swapStudent(pnode, nnode);
+        //         }
+        //     }
+        // }
+
+        recv_idx = 0;
+        SortTree_show(manage->sortTree);
+
+        memset(s_arr, 0, sizeof(Student_t) * STUDENT_LEN);
+
+        for (int i = 1; i < recv_idx; i++)
         {
-            for (klist_node_t *nodej = manage->all.head.next; (nodej->next != nullptr) && (nodej->next->next != node); nodej = nodej->next)
-            {
-                Student_t *pnode = KLIST_STRUCT_ADDR(nodej, Student_t, node);
-                Student_t *nnode = KLIST_STRUCT_ADDR(nodej->next, Student_t, node);
-                if (pnode->score < nnode->score)
-                {
-                    swapStudent(pnode, nnode);
-                }
-            }
+            Student_t *ts = manage->indexOfId(manage, recv_buffer[i]);
+            Student_fromcopyTo(ts, &s_arr[i]);
+        }
+
+        recv_idx--;
+
+        for (klist_node_t *node = manage->all.head.next; node != nullptr && node != &manage->all.tail; node = node->next)
+        {
+            Student_t *s2 = KLIST_STRUCT_ADDR(node, Student_t, node);
+            Student_fromcopyTo(&s_arr[recv_idx--], s2);
         }
         break;
     case SORT_LOWER:
+        // 二叉排序树
         recv_idx = 0;
         SortTree_show(manage->sortTree);
+
+        memset(s_arr, 0, sizeof(Student_t) * STUDENT_LEN);
+
+        for (int i = 1; i < recv_idx; i++)
+        {
+            Student_t *ts = manage->indexOfId(manage, recv_buffer[i]);
+            Student_fromcopyTo(ts, &s_arr[i]);
+        }
         recv_idx = 1;
+
         for (klist_node_t *node = manage->all.head.next; node != nullptr && node != &manage->all.tail; node = node->next)
         {
-            Student_t *s1 = manage->indexOfId(manage, recv_buffer[recv_idx++]);
             Student_t *s2 = KLIST_STRUCT_ADDR(node, Student_t, node);
-            Student_fromcopyTo(s1, s2);
+            Student_fromcopyTo(&s_arr[recv_idx++], s2);
         }
         break;
     default:
@@ -308,4 +347,29 @@ bool StudentManager_sort(struct _StudentManger *manage, uint8_t METHOD)
         break;
     }
     return true;
+}
+
+const char *Student_get_name(struct _Student *s)
+{
+    return s->name;
+}
+
+const int Student_get_score(struct _Student *s)
+{
+    return s->score;
+}
+
+const int Student_get_age(struct _Student *s)
+{
+    return s->age;
+}
+
+const Sex_t Student_get_sex(struct _Student *s)
+{
+    return s->sex;
+}
+
+const char *Student_get_id(struct _Student *s)
+{
+    return s->id;
 }
